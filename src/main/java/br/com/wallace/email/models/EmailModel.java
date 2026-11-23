@@ -3,23 +3,21 @@ package br.com.wallace.email.models;
 import br.com.wallace.email.dtos.EmailRequest;
 import br.com.wallace.email.enums.StatusEmail;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
-
 
 @Entity
 @Table(name = "tb_email")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class EmailModel implements Serializable {
-    private static final Long serialVersionUID = 1L;
+public class EmailModel {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long emailId;
     private String ownerRef;
     private String emailFrom;
@@ -27,15 +25,33 @@ public class EmailModel implements Serializable {
     private String subject;
     @Column(columnDefinition = "TEXT")
     private String text;
-    private LocalDateTime sendDateEmail;
+    @Enumerated(EnumType.STRING)
     private StatusEmail statusEmail;
+    @Column(columnDefinition = "TEXT")
+    private String errorMessage;
+    private LocalDateTime createdAt;
+    private LocalDateTime sendDateEmail;
 
-    public EmailModel(EmailRequest emailRequest) {
-        this.emailFrom = emailRequest.emailFrom();
-        this.ownerRef = emailRequest.ownerRef();
-        this.emailTo = emailRequest.emailTo();
-        this.subject = emailRequest.subject();
-        this.text = emailRequest.text();
+    public static EmailModel pendingFrom(EmailRequest request) {
+        var email = new EmailModel();
+        email.ownerRef = request.ownerRef();
+        email.emailFrom = request.emailFrom();
+        email.emailTo = request.emailTo();
+        email.subject = request.subject();
+        email.text = request.text();
+        email.statusEmail = StatusEmail.PENDING;
+        email.createdAt = LocalDateTime.now();
+        return email;
     }
 
+    public void markAsSent() {
+        this.statusEmail = StatusEmail.SENT;
+        this.sendDateEmail = LocalDateTime.now();
+        this.errorMessage = null;
+    }
+
+    public void markAsError(String reason) {
+        this.statusEmail = StatusEmail.ERROR;
+        this.errorMessage = reason;
+    }
 }
