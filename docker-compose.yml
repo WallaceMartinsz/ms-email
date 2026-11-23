@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ms_email
+      POSTGRES_USER: ms_email
+      POSTGRES_PASSWORD: ms_email
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  localstack:
+    image: localstack/localstack:3.8
+    environment:
+      SERVICES: ses
+      AWS_DEFAULT_REGION: us-east-1
+      SES_SENDER: no-reply@ms-email.local
+    ports:
+      - "4566:4566"
+    volumes:
+      - ./localstack/init:/etc/localstack/init/ready.d
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  pgdata:
