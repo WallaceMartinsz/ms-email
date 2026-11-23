@@ -1,0 +1,21 @@
+app:
+  aws:
+    endpoint: ${AWS_ENDPOINT:http://localhost:4566}
+  seed-users:
+    admin-password: ${ADMIN_PASSWORD:admin123}
+    user-password: ${USER_PASSWORD:user123}
+
+spring:
+  main:
+    banner-mode: off
+
+logging:
+  pattern:
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%5p) %clr(%-18.18logger{0}){cyan} %m%n%wEx"
+  level:
+    root: WARN
+    br.com.wallace.email: INFO
+    org.springframework.boot.web.embedded.tomcat: INFO
+    org.springframework.amqp.rabbit: ERROR
+    software.amazon.awssdk: ERROR
+    org.hibernate.SQL: ${LOG_SQL:OFF}
