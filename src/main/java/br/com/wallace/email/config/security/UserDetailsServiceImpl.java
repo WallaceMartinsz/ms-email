@@ -1,31 +1,28 @@
 package br.com.wallace.email.config.security;
 
-import br.com.wallace.email.models.UserModel;
 import br.com.wallace.email.repositories.UserRepository;
-import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    final UserRepository userRepository;
-
-    public UserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserModel userModel = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
-        return new User(userModel.getUsername(), userModel.getPassword(), userModel.getAuthorities());
-
+    @Transactional(readOnly = true)
+    public UserDetails loadUserByUsername(String username) {
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + username));
+        return User.withUsername(user.getUsername())
+                .password(user.getPassword())
+                .authorities(user.getRoles())
+                .build();
     }
-
-
 }
